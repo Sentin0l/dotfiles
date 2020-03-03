@@ -1,0 +1,183 @@
+#!/bin/sh 
+#===================================================================================================
+# xScribe -- (version: 1.01)
+# Created by: Sentin0l
+#===================================================================================================
+
+mkdir xtemp
+
+# GET THE VERSION OF THE WINDSCRIBE CLI CLIENT
+CLIVERSION="$(windscribe --help | grep "Windscribe CLI client" | awk '{print $4}')"
+
+# CLEAR SCREEN AND DISPLAY MAIN BANNER
+clear
+clear
+printf "      ___         _ _          \n"
+printf "__ __/ __| __ _ _(_) |__  ___  \n"
+printf "\ \ /\__ \/ _| '_| | '_ \/ -_) \n"
+printf "/_\_\|___/\__|_| |_|_.__/\___| \n"
+# printf "\n"           
+
+#===================================================================================================
+
+# GET "STATUS" DATA & WRITE TO FILE (STATUS.TXT)
+MAINSTATUS="$(windscribe status > xtemp/status.txt)"
+
+UPTIME="$(cat xtemp/status.txt | grep "uptime:" | awk '{print $8}' | tr -d 0-9,)"
+
+# GET THE FINAL UPTIME (CONFIGURED TO SHOW D/H/M)
+if [ "$UPTIME" = "d" ]; then
+    UPTIMEFINAL="$(cat xtemp/status.txt | grep "uptime:" | awk '{print $8, $9, $10}' | tr -d ,)"
+elif [ "$UPTIME" = "h" ]; then
+    UPTIMEFINAL="$(cat xtemp/status.txt | grep "uptime:" | awk '{print $8, $9}' | tr -d ,)"
+elif [ "$UPTIME" = "m" ]; then
+    UPTIMEFINAL="$(cat xtemp/status.txt | grep "uptime:" | awk '{print $8}' | tr -d ,)"
+else
+    UPTIMEFINAL="N/A"
+fi
+
+# GET THE FINAL CPU VALUE
+if [ "$UPTIME" = "d" ]; then
+    CPU="$(cat xtemp/status.txt | grep "%cpu" | awk '{print $12}' | tr -d ,)"
+elif [ "$UPTIME" = "h" ]; then
+    CPU="$(cat xtemp/status.txt | grep "%cpu" | awk '{print $11}' | tr -d ,)"
+elif [ "$UPTIME" = "m" ]; then
+    CPU="$(cat xtemp/status.txt | grep "%cpu" | awk '{print $10}' | tr -d ,)"
+fi
+
+# GET THE FINAL MEMORY (RAM) VALUE
+if [ "$UPTIME" = "d" ]; then
+    MEMORY="$(cat xtemp/status.txt | grep "%cpu" | awk '{print $14}')"
+elif [ "$UPTIME" = "h" ]; then
+    MEMORY="$(cat xtemp/status.txt | grep "%cpu" | awk '{print $13}')"
+elif [ "$UPTIME" = "m" ]; then
+    MEMORY="$(cat xtemp/status.txt | grep "%cpu" | awk '{print $12}')"
+fi
+
+
+# GET THE VPN CONNECTION STATUS
+CONNECTION="$(cat xtemp/status.txt | grep "CONNECTED" | awk '{print $1}' | tr '[:upper:]' '[:lower:]')"
+
+# GET THE PROCESS ID FOR WINDSCRIBE
+PROCESSID="$(cat xtemp/status.txt | grep "status:" | awk '{print $4}' | tr -d ,)"
+
+# GET THE STATUS OF WINDSCRIBE
+STATUS="$(cat xtemp/status.txt | grep "status:" | awk '{print $6}' | tr -d ,)"
+
+# GET THE CURRENT IP ADDRESS (via Windscribe)
+IPADDRESS="$(cat xtemp/status.txt | grep "IP" | awk '{print $2}')"
+
+#===================================================================================================
+printf "\n"
+#printf "================================================================ \n"
+printf "WINDSCRIBE: (${CLIVERSION}) \n"
+printf "================================================================ \n"
+printf "STATUS: ${STATUS} \n"
+printf "CONNECTION: ${CONNECTION} \n"
+printf "IP ADDRESS: ${IPADDRESS} \n"
+printf "PROCESS ID: ${PROCESSID} \n"
+printf "UPTIME: ${UPTIMEFINAL} \n"
+printf "CPU/MEMORY: ${CPU}, ${MEMORY} \n"
+printf " \n"
+
+# GET THE ACCOUNT DATA & WRITE TO FILE (ACCOUNT.TXT)
+MAINACCOUNT="$(windscribe account > xtemp/account.txt)"
+#===================================================================================================
+
+ACCOUNTNAME="$(cat xtemp/account.txt | grep "Username:" | awk '{print $2}')"
+
+DATAUSED="$(cat xtemp/account.txt | grep "Data Usage" | awk '{print $3, $4}')"
+
+AVAILABLEDATA="$(cat xtemp/account.txt | grep "Data Usage" | awk '{print $6, $7}')"
+
+DATAPLAN="$(cat xtemp/account.txt | grep "Plan" | awk '{print $2, $3, $4}')"
+
+
+# ACCOUNT SETTINGS
+#===================================================================================================
+
+# CHECK IF USER IS LOGGED INTO WINDSCRIBE
+LOGINSTATUS="$(cat xtemp/account.txt | grep "-" | awk '{print $2, $3}')"
+
+if [ "$LOGINSTATUS" = "My Account" ]; then
+    #printf "================================================================ \n"
+    printf "ACCOUNT: [${ACCOUNTNAME}] \n"
+    printf "================================================================ \n"
+    printf "PLAN: ${DATAPLAN} \n"
+    printf "DATA USED: ${DATAUSED} \n"
+    printf "AVAILABLE: ${AVAILABLEDATA} \n"
+    printf "\n"
+
+
+# ADVANCED WINDSCRIBE SETTINGS
+#===================================================================================================
+    #printf "                                            Created by: Sentin0l \n"
+    #printf "================================================================ \n"
+    printf "ADVANCED:\n"
+    printf "================================================================ \n"
+
+    # GET THE FIREWALL DATA & CAT TO FILE (FIREWALL.TXT)
+    MAINFIREWALL="$(windscribe firewall > xtemp/firewall.txt)"
+
+    # GET THE CURRENT FIREWALL MODE
+    FIREWALL="$(cat xtemp/firewall.txt | grep "Firewall mode" | awk '{print $3}')"
+
+    printf "FIREWALL: ${FIREWALL} \n"
+
+    # GET THE PORT SETTINGS USED FOR WINDSCRIBE
+    MAINPORT="$(windscribe port > xtemp/port.txt)"
+
+    # GET THE DEFAULT PORT NUMBER
+    DEFAULTPORT="$(cat xtemp/port.txt | grep "Default port:" | awk '{print $3}' )"
+
+    printf "PORT: ${DEFAULTPORT} \n"
+
+    # GET THE PROTOCOL SETTINGS USED FOR WINDSCRIBE
+    MAINPROTOCOL="$(windscribe protocol > xtemp/protocol.txt)"
+
+    # GET THE DEFAULT PROTOCOL (TCP/UDP)
+    DEFAULTPROTOCOL="$(cat xtemp/protocol.txt | grep "Default protocol:" | awk '{print $3}')"
+
+    printf "PROTOCOL: ${DEFAULTPROTOCOL} \n"
+
+    # GET THE PROXY SETTINGS FOR WINDSCIRBE
+    MAINPROXY="$(windscribe proxy > xtemp/proxy.txt)"
+
+    # GET THE DEFAULT PROXY (HTTP/SOCKS5/ETC)
+    DEFAULTPROXY="$(cat xtemp/proxy.txt | grep "proxy mode:" | awk '{print $3}')"
+
+    printf "PROXY: ${DEFAULTPROXY} \n"
+
+
+# ELSE IF USER IS LOGGED OUT
+#===================================================================================================
+
+else
+    printf "================================================================ \n"
+    printf "ACCOUNT: [LOGGED OUT]\n"
+    printf "================================================================ \n"
+    printf "Please Log in to Windscribe to view Account. \n"
+    printf "\n"
+    printf "Use command: windscribe login \n "
+
+fi
+
+printf "\n"
+
+
+# CLEAN UP
+#===================================================================================================
+
+if [ "$LOGINSTATUS" = "My Account" ]; then
+    rm -r xtemp/status.txt
+    rm -r xtemp/account.txt
+    rm -r xtemp/firewall.txt
+    rm -r xtemp/port.txt
+    rm -r xtemp/protocol.txt
+    rm -r xtemp/proxy.txt
+    rm -r xtemp
+else
+    rm -r xtemp/status.txt
+    rm -r xtemp/account.txt
+    rm -r xtemp
+fi
